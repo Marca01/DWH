@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "rosy-resolver-382816",
+  "private_key_id": "3031546e0380b1bc13a506c77d499d687b6d392c",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCnj4LF4ydzcN6h\nqPgogaignTnAcYbe6c/WH2+qObtgIQNxv/kKKuG672zGs1VklTOfewxLS//rw2Mt\nXcA5aVdbeZ97ETYiVLSH6oYrlc0P0dmKuQoPUTCXn6XUiQ1Hl+Y6cT8z+P88CGAZ\n+3uMfD8neyx5ynIdX0y9hLlNIFxE2KLOefQlTNBqLHdFjqjMXTjJnDOYa0e/efUM\ncdxPYdbItlYtEj0tQQOigygtx6pPrxL/CbEmH938L2o4l4Yyhd+5861g639mlc5O\nJqf99BM6+Z+ItY5LYczpL6HXL7X3SNrFEcd4zho6QJJR57567QHqoFHJKzZTj/gL\nFu7XcszjAgMBAAECgf8IXQTxFIHjloW/GiG6joVN8MPxLGQdLgAxr9HGkOI7Ivjs\nmBorZ7+jsWwR1Db9I5HFZAmOYzy4MnoykJfOt4/BHYnYRVj8lpMW4Eh8x/1XzMxH\nyvSZJHRIcnabluZLrIImoYBppeeJM/5CoxHc8To1vkV6B6DG8vrFJYVvjPUOCMnB\nRTRCqdYQU986D1fsGjesYS/T1WR92SU1hC5qdR1NjL+FzqEUB2c/MIqTNnlQL2hB\nlMt5MPJxO/zc2sppEmtU0XDQw25cbenGF+5kVQU/k8XPwmgfz70GrXuvcvK24KjE\nftvNUAirbs4AZz19z1M5OkEJCDs7juhF7RS+7BkCgYEA5S54sgtj9G6CNw/W6Phu\n8hnPy8zpbXts3pHYAoXwFlTHfXmDmR545OeauEo90RHHkEGGs8n2YsnmB6DoGh6I\nR9wooSXlfaPa47iVs3T/52OkY9pTFWZm+UKbc6K0BLJ9ZjgkCrT5utiM4Y6zj8On\ngCt0gVOWtXu8KLZCiy5FFx0CgYEAuysT4uB1ZMmioi4tcAuN+wo8SO63UqNmug/Z\nQ8WM+HP7LhEO79CfTqGsIAMtmUb2A+pDozjTJQsJHd2gGxSEWCJ/efiaqq0KA3QK\nnx+BDmcu98mRTHo1OxQ51sr9eJG/hJCBeHkqBrFlLZ/fMw0V+4MgBRJZvBglmNTT\n+LQ+M/8CgYEAucfQI1REdLLYb9YxOq2ZEjyGTAkR+KQi/tFvL6xvkUqsZDSKzyb6\njWSJ8XaNYdtt0KytizTeu/o6tFhljjbN9qKrdOaJgC3BlPPetpjTkTke26rxytk2\nBD1QUo7EK0KdkK1V2jAWeLZujbHmMVZDhAy15thhxUBGqSIGE1kwvKkCgYBUuIYS\n3ykkSwT7xk0493H4HUT2el+u31njhMMCo0xRNiaPTpdlRBioPhQslWOxiuZXFVYy\nbslcbiddRnFvcJULU+pB6p8P/K2YrJEWP+tp+pjO/oVvia3IpTodGNstFUQMnGCO\niMHWL7wtr70XXagCpfL7eLf3pTJ3gHbGj8fMPwKBgQCmfrvjWLNbZLjxwTlFiQ8k\nRSGMVG1+ZyxktF4KduS9uIXwT863k31QqJZVpoCI+LmeeeupmIAL5Ms1q/qAyKo4\nXgpeDPCIGXk8kyfr2Ob+VWDJPDuqfDb9Uc5cc4cydTljGHzfHyU1WYkWCC6MTsWc\nLbyKI/gRarfm/YbJDW7ubw==\n-----END PRIVATE KEY-----\n",
+  "client_email": "epl-service@rosy-resolver-382816.iam.gserviceaccount.com",
+  "client_id": "114324130422218646276",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/epl-service%40rosy-resolver-382816.iam.gserviceaccount.com"
+}
