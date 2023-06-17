@@ -1,10 +1,10 @@
 from pyspark.sql import SparkSession, Window, Row
 from pyspark.sql.functions import to_timestamp, get_json_object, col, create_map, explode, lit, when, sum, concat, asc, desc, row_number, collect_list, concat_ws, split, flatten, to_date, date_format,udf
-from pyspark.sql.types import StructType, StructField, StringType, FloatType, DateType
+from pyspark.sql.types import StructType, StructField, StringType, FloatType, DataType
 import os
 import threading
 import json
-# from utilss import getFirstLetterUdf, formatDateTypeUdf, formatTime
+from utilss import getFirstLetterUdf, formatDateTypeUdf, formatTime
 import re
 import time
 from datetime import datetime, date
@@ -17,24 +17,6 @@ os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'ServiceKey_GoogleCloudStorage.js
 
 SEASON_DATA_PATH = os.getenv('SEASON_DATA_PATH')
 SNOWFLAKE_PWD = os.getenv('SNOWFLAKE_PWD')
-def getFirstLetter(text):
-    words = re.split(r'[ /]', text)
-    first_letters = [word[0] for word in words]
-    first_letters = ''.join(first_letters)
-    return first_letters
-
-def formatDateType(date_string):
-    date_object = datetime.strptime(date_string, "%d %B %Y").date()
-    return str(date_object)
-def formatTime(sec):
-    sec = round(sec)
-    m, s = divmod(sec, 60)
-    h, m = divmod(m, 60)
-    formatted_time = f"{h:02d}:{m:02d}:{s:02d}"
-    return formatted_time
-
-getFirstLetterUdf = udf(getFirstLetter, StringType())
-formatDateTypeUdf = udf(formatDateType, StringType())
 
 def create_spark_session():
     spark = SparkSession.builder \
@@ -252,20 +234,6 @@ def transform_data(data):
         fct_club_stats = fct_club_stats.union(club_id).orderBy('clubid')
     # fct_club_stats.show(1000, truncate=False)
 
-        # ========================================================= REFERENCE CODE =========================================================
-        # fct_club_stat = club_stats_detail.select(col('club_stats_detail.owner.club.id').alias('clubid'), *club_stats_detail.columns)
-        # # joined_club_stats = fct_club_stat.join(dim_club, 'clubid').crossJoin(dim_season)
-        # joined_club_stats = fct_club_stat.join(dim_club, 'clubid').crossJoin(dim_season)
-        #
-        # columns_to_remove = ['club_stats_detail', 'label', 'name', 'short_name', 'abbr']
-        # joined_club_stats = joined_club_stats.drop(*columns_to_remove)
-        #
-        # headed_columns = ['clubid', 'seasonid']
-        # columns_to_select = headed_columns + [column for column in joined_club_stats.columns if col not in headed_columns]
-        #
-        # fct_club_stats = joined_club_stats.select(*columns_to_select)
-        # ==================================================================================================================
-
 
 
     # ========================================================= PLAYER =========================================================
@@ -359,7 +327,8 @@ def load_data(data_transformed):
     conn = snowflake.connector.connect(
         user='KHale',
         password=SNOWFLAKE_PWD,
-        account='nr98578.ap-southeast-1',
+        # account='nr98578.ap-southeast-1',
+        account='pz04003.ap-southeast-1',
         database='EPL',
         schema='warehouse'
     )
@@ -379,29 +348,10 @@ def load_data(data_transformed):
                 arr_idx = [1]
                 stat_idx_from = 1
 
-        # all_col_idx = [str(i + 1) for i in range(len(df.columns))]
-        # col_idx = [str(i + 1) for i in range(len(df.columns[:stat_idx_from]))]
-
-        # arr_idx = [c for c in df.columns if 'id' in c]
-        # arr_idx = [str(i + 1) for i in range(len(arr_idx))]
-        #
-        # stat_cols = [c for c in df.columns if 'id' not in c]
-
         # sql = f"INSERT INTO {table} VALUES ({'%s, '*(len(df.columns) - 1) + '%s'})"
         insert_to_temp_table_sql = f"INSERT INTO temp_table VALUES ({'%s, '*(len(df.columns) - 1) + '%s'})"
         drop_temp_table_sql = f"drop table temp_table"
 
-        # find_all_duplicates_sql = f"create or replace temp table duplicate_holder as (select {', '.join(df.columns)} from {table} group by {', '.join(all_col_idx)} having count(*)>1)"
-        # make_duplicates_sql = f'''
-        #     merge into {table} AS T1
-        #         using (select {', '.join(df.columns[:stat_idx_from])}
-        #         from {table}
-        #         group by {', '.join(col_idx)}
-        #         having count(*)>1
-        #     ) AS T2 on
-        #     {', '.join([f'T1.${i}' for i in arr_idx])} = {', '.join([f'T2.${i}' for i in arr_idx])}
-        #     when matched then update set {', '.join([f'T1.{df.columns[i]} = %s' for i in range(stat_idx_from, len(df.columns))])}
-        # '''
         update_old_data_sql = f'''
             merge into {table} AS T1 using temp_table AS T2 on
             ({', '.join([f'T1.${i}' for i in arr_idx])}) = ({', '.join([f'T2.${i}' for i in arr_idx])})
@@ -421,14 +371,6 @@ def load_data(data_transformed):
         cursor.execute(update_old_data_sql)
         cursor.execute(drop_temp_table_sql)
 
-        # cursor.execute(find_all_duplicates_sql)
-        # conn.execute_string(
-        #     "begin transaction;"
-        #     f"delete from {table} a using duplicate_holder b where ({', '.join([f'a.${i}' for i in arr_idx])})=({', '.join([f'b.${i}' for i in arr_idx])});"
-        #     f"insert into {table} select * from duplicate_holder;"
-        #     "commit;"
-        #     "drop table duplicate_holder;"
-        # )
         conn.commit()
 
     conn.close()
