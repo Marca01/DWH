@@ -17,6 +17,17 @@ def upload_blob(bucket_name, source_file_name, destination_blob_name):
     print(
         f"File {source_file_name} uploaded to {destination_blob_name}."
     )
+# def upload_blob_from_memory(bucket_name, contents, destination_blob_name):
+#     storage_client = storage.Client()
+#     bucket = storage_client.bucket(bucket_name)
+#     blob = bucket.blob(destination_blob_name)
+#
+#     # blob.upload_from_string(contents)
+#     blob.upload_from_string(contents, content_type='application/json')
+#
+#     print(
+#         f"{destination_blob_name} uploaded to {bucket_name}."
+#     )
 
 bucket_name = os.getenv('BUCKET_NAME')
 

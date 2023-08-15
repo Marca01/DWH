@@ -1,0 +1,27 @@
+<html>
+<head>
+    <style>
+        /* You can add some CSS styles here */
+	body {
+	   background: whitesmoke
+	}
+    </style>
+</head>
+<body>
+    <h1>Airflow alert: {{ti}}</h1>
+    <p>Start: {{ti.start_date}} - End: {{ti.end_date}}</p>
+    <p>Try {{ti.try_number}} out of {{ti.max_tries + 1}}<br></p>
+    <p>Job Name: {{ti.dag_id}}</p>
+    <p>Task Id: {{ti.task_id}}</p>
+    <p>Log: <a href= {{ti.log_url}} target="_blank">Link</a></p>
+    <p>Host: {{ti.hostname}}</p>
+    <p>Log file: {{ti.log_url}}</p>
+    </br>
+    <h2>Dataset Information</h2>
+    <ul>
+	{% for dataset in inlets %}
+    	   <li>Inserted {{ dataset.name }} from {{dataset.platform}} at</li>
+	{% endfor %}
+    </ul>
+</body>
+</html>

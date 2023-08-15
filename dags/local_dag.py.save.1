@@ -85,9 +85,11 @@ def report_operation(context):
     host, password, timeout_sec = hook._get_config()
     reporter = Operation(datahub_host=host, datahub_token=password, timeout=timeout_sec)
     task = context["ti"].task
-    for outlet in task.outlets:
-        print(f"Reporting insert operation for {outlet.urn}")
-        reporter.report_operation(urn=outlet.urn, operation_type="UPDATE")
+    for outlet in task._outlets:
+        print(f"Reporting update operation for {outlet.urn}")
+        reporter.report_operation(
+            urn=outlet.urn, operation_type="INSERT", num_affected_rows=123
+        )
 
 
 default_args = {
@@ -100,11 +102,11 @@ default_args = {
 }
 
 with DAG(
-        dag_id="epl_dag",
-        start_date=datetime(2023, 8, 14),
-        schedule="30 20 * * 1",
-        catchup=False,
-        default_args=default_args,
+    dag_id="epl_dag",
+    start_date=datetime(2023, 7, 26),
+    # schedule="26 23 * * *",
+    catchup=False,
+    default_args=default_args,
 ) as dag:
     # Ingest data
     t1 = PythonOperator(
@@ -141,10 +143,34 @@ with DAG(
     t11 = EmptyOperator(task_id="finish_upload_to_data_lake_successfully")
 
     # # ETL
-    t12 = BashOperator(
+    # # t12 = BashOperator(
+    # #    task_id="etl",
+    # #    bash_command="spark-submit --py-files '/opt/airflow/dags/tasks/utilss.py' --py-files '/opt/airflow/dags/tasks/gx.py' --packages net.snowflake:snowflake-jdbc:3.13.30,net.snowflake:spark-snowflake_2.12:2.12.0-spark_3.3,org.apache.hadoop:hadoop-aws:3.3.1,com.amazonaws:aws-java-sdk-bundle:1.11.1000 --conf spark.hadoop.fs.s3a.access.key=AKIA5CWFLZTSBUFB6OMB --conf spark.hadoop.fs.s3a.secret.key=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  --conf spark.driver.memory=7g --conf spark.executor.memory=7g /opt/airflow/dags/tasks/etl.py /opt/airflow/dags/tasks/etl.py"
+    # # )
+    t12 = SparkSubmitOperator(
         task_id="etl",
-        # #    bash_command="spark-submit --py-files '/opt/airflow/dags/tasks/utilss.py' --py-files '/opt/airflow/dags/tasks/gx.py' --packages net.snowflake:snowflake-jdbc:3.13.30,net.snowflake:spark-snowflake_2.12:2.12.0-spark_3.3,org.apache.hadoop:hadoop-aws:3.3.1,com.amazonaws:aws-java-sdk-bundle:1.11.1000 --conf spark.hadoop.fs.s3a.access.key=AKIA5CWFLZTSBUFB6OMB --conf spark.hadoop.fs.s3a.secret.key=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  --conf spark.driver.memory=7g --conf spark.executor.memory=7g /opt/airflow/dags/tasks/etl.py /opt/airflow/dags/tasks/etl.py"
-        bash_command=f'spark-submit --py-files "/opt/airflow/dags/tasks/gx.py" --py-files "/opt/airflow/dags/tasks/utilss.py" --packages net.snowflake:snowflake-jdbc:3.13.30,net.snowflake:spark-snowflake_2.12:2.12.0-spark_3.3 --jars https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop3-latest.jar --conf spark.hadoop.fs.gs.impl=com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem --conf spark.hadoop.fs.gs.auth.service.account.enable=true --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/opt/airflow/dags/ServiceKey_GoogleCloudStorage.json --conf spark.hadoop.fs.gs.auth.client.id=1033571263880-bji2ou5204r6a4umbsplhielepae8b4d.apps.googleusercontent.com --conf spark.hadoop.fs.gs.auth.client.secret={GS_CLIENT_SECRET} /opt/airflow/dags/tasks/etl.py'
+        dag=dag,
+        application="/opt/airflow/dags/tasks/etl.py",
+        executor_memory="6G",
+        driver_memory="6G",
+        env_vars={"JAVA_HOME": "/usr/lib/jvm/java-11-openjdk-amd64/"},
+        py_files="/opt/airflow/dags/tasks/gx.py,/opt/airflow/dags/tasks/utilss.py",
+        packages="net.snowflake:snowflake-jdbc:3.13.30,net.snowflake:spark-snowflake_2.12:2.12.0-spark_3.3",
+            # "org.apache.hadoop:hadoop-aws:3.3.1",
+            # "com.amazonaws:aws-java-sdk-bundle:1.11.1000",
+        conf={
+            # "spark.hadoop.fs.s3a.access.key": "AKIA5CWFLZTSBUFB6OMB",
+            # "spark.hadoop.fs.s3a.secret.key": "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",
+	    "spark.master": "local",
+            "spark.hadoop.fs.gs.impl": "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem",
+            "spark.hadoop.fs.gs.auth.service.account.enable": "true",
+            "spark.hadoop.google.cloud.auth.service.account.json.keyfile": "/opt/airflow/dags/ServiceKey_GoogleCloudStorage.json",
+            "spark.hadoop.fs.gs.auth.client.id": "1033571263880-bji2ou5204r6a4umbsplhielepae8b4d.apps.googleusercontent.com",
+            "spark.hadoop.fs.gs.auth.client.secret": GS_CLIENT_SECRET,
+        },
+        # inlets=[Dataset("s3", "epl-it/season/seasons.json")],
+        # outlets=[Dataset("snowflake", "epl.warehouse.dim_season")],
+        # on_success_callback=report_operation
     )
     t13 = BashOperator(
         task_id="load_gcs",
@@ -178,6 +204,40 @@ with DAG(
         on_success_callback=report_operation,
     )
     t14 = EmptyOperator(task_id="finish_etl_successfully")
+    # t1 = BashOperator(
+    #     task_id='start',
+    #     bash_command="echo 'Testing connection to datahub'"
+    # )
 
+    # t1 = PythonOperator(
+    #     task_id='start_run_this',
+    #     python_callable=my_func,
+    #     inlets=inlet_data,
+    #     outlets=outlet_data
+    # )
+    # bash_command='cat {{ inlets[0].url }} > {{ outlets[0].url }}',
+
+    # t1 = BashOperator(
+    #     task_id="run_this_first",
+    #     dag=dag,
+    #     # bash_command="echo 'Testing ingest snowflake metadata to datahubbbbb by KHale'",
+    #     bash_command="cat {{ inlets[0] }} > {{ outlets[0] }}",
+    #     # inlets={
+    #     #     "datasets": Dataset(platform="snowflake", name="epl.warehouse.dim_season"),
+    #     # },
+    #     # outlets={
+    #     #     "datasets": Dataset("snowflake", "epl.warehouse.dim_stadium")
+    #     # },
+    #     inlets=f_in,
+    #     outlets=f_out,
+    # )
+    # # entityUrn = urn:li:dataset:(urn:li:dataPlatform:s3, epl-it/award/2014-15/month/award.json, PROD)
+    # t2 = BashOperator(
+    #     task_id="end_ingesting_metadata_to_datahub",
+    #     dag=dag,
+    #     bash_command="echo 'End ingesting'",
+    # )
     # Set dependencies between tasks
     [t1, t2, t3, t4, t5, t6, t7, t8, t9, t10] >> t11 >> t12 >> t13 >> t14
+# t12 >> t13
+# t1 >> t2

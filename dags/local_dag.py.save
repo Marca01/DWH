@@ -1,0 +1,140 @@
+import sys
+# import os
+# sys.path.insert(0,os.path.abspath(os.path.dirname(__name__)))
+sys.path.append('/home/airflow/.local/lib/python3.10/site-packages/datahub_provider')
+
+from datetime import datetime, timedelta
+
+from airflow import DAG
+from airflow.decorators import task
+from airflow.operators.bash import BashOperator
+from airflow.providers.snowflake.operators.snowflake import SnowflakeOperator
+from airflow.operators.python import PythonOperator
+from airflow.operators.empty import EmptyOperator
+from airflow.lineage.entities import File
+from datahub_provider.entities import Dataset, Urn
+from tasks.main import upload_season, upload_player_info, upload_player_stats, upload_club_info, upload_club_stats, upload_manager_info, upload_award, upload_award_contents, upload_match_info, upload_match_stats
+# from main import uploadSeason, uploadPlayerInfo, uploadPlayerStats, uploadClubInfo, uploadClubStats
+# from etl import create_spark_session, main, extract_data, transform_data, load_data
+
+# ┌───────────── minute (0 - 59)
+# │ ┌───────────── hour (0 - 23)
+# │ │ ┌───────────── day of the month (1 - 31)
+# │ │ │ ┌───────────── month (1 - 12)
+# │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday;
+# │ │ │ │ │                                   7 is also Sunday on some systems)
+# │ │ │ │ │
+# │ │ │ │ │
+# * * * * * <command to execute>
+
+# A DAG represents a workflow, a collection of tasks
+# if want trigger when 2023/05/12 then set start_date = 2023/05/11
+# SNOWFLAKE_CONN_ID = 'epl_snowflake_conn'
+# #
+# default_args = {
+#     "snowflake_conn_id": SNOWFLAKE_CONN_ID,
+# }
+
+default_args = {
+    "owner": "airflow",
+    "depends_on_past": False,
+    "email": ["lkha.5023@gmail.com"],
+    "email_on_failure": False,
+    "execution_timeout": timedelta(minutes=5),
+}
+
+with DAG(
+        dag_id="epl_dag",
+        start_date=datetime(2023, 7, 26),
+        # schedule="26 23 * * *",
+        catchup=False,
+        default_args=default_args
+) as dag:
+    t1 = PythonOperator(
+        task_id='get_and_upload_season_data',
+        python_callable=upload_season
+    )
+    t2 = PythonOperator(
+        task_id='get_and_upload_player_info_data',
+        python_callable=upload_player_info
+    )
+    t3 = PythonOperator(
+        task_id='get_and_upload_player_stats_data',
+        python_callable=upload_player_stats
+    )
+    t4 = PythonOperator(
+        task_id='get_and_upload_club_info_data',
+        python_callable=upload_club_info
+    )
+    t5 = PythonOperator(
+        task_id='get_and_upload_club_stats_data',
+        python_callable=upload_club_stats
+    )
+    t6 = PythonOperator(
+        task_id='get_and_upload_manager_info_data',
+        python_callable=upload_match_info
+    )
+    t7 = PythonOperator(
+        task_id='get_and_upload_award_data',
+        python_callable=upload_award
+    )
+    t8 = PythonOperator(
+        task_id='get_and_upload_award_contents_data',
+        python_callable=upload_award_contents
+    )
+    t9 = PythonOperator(
+        task_id='get_and_upload_match_info_data',
+        python_callable=upload_match_info
+    )
+    t10 = PythonOperator(
+        task_id='get_and_upload_match_stats_data',
+        python_callable=upload_match_stats
+    )
+    t11 = EmptyOperator(
+        task_id='end_upload_to_data_lake'
+    )
+    # ETL
+    # t1 = BashOperator(
+    #     task_id="etl",
+    #     bash_command="python3 /opt/airflow/dags/tasks/etl.py"
+    #)
+    # t1 = BashOperator(
+    #     task_id='start',
+    #     bash_command="echo 'Testing connection to datahub'"
+    # )
+
+    # t1 = PythonOperator(
+    #     task_id='start_run_this',
+    #     python_callable=my_func,
+    #     inlets=inlet_data,
+    #     outlets=outlet_data
+    # )
+    # bash_command='cat {{ inlets[0].url }} > {{ outlets[0].url }}',
+
+    # f_in = '/opt/airflow/dags/Data_files/test_inlets.txt'
+    # f_out = '/opt/airflow/dags/Data_files/test_output.txt'
+
+    # t1 = BashOperator(
+    #     task_id='run_this_first',
+    #     dag=dag,
+    #     bash_command="echo 'Testing ingest snowflake metadata to datahubbbbb by KHale'",
+    #     # bash_command='cat {{ inlets[0] }} > {{ outlets[0] }}',
+    #     inlets={
+    #         "datasets": Dataset(platform="snowflake", name="epl.warehouse.dim_season"),
+    #     },
+    #     outlets={
+    #         "datasets": Dataset("snowflake", "epl.warehouse.dim_stadium")
+    #     },
+    #     # inlets=f_in,
+    #     # outlets=f_out
+    # )
+    # entityUrn = urn:li:dataset:(urn:li:dataPlatform:s3, epl-it/award/2014-15/month/award.json, PROD)
+    # t2 = BashOperator(
+    #     task_id='end_ingesting_metadata_to_datahub',
+    #     dag=dag,
+    #     bash_command="echo 'End ingesting'"
+    # )
+    # Set dependencies between tasks
+    [t1, t2, t3, t4, t5, t6, t7, t8, t9, t10] >> t11
+    # t1 >> t2
+

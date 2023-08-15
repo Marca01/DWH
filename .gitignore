@@ -1,5 +1,5 @@
-.env
-ServiceKey_GoogleCloudStorage.json
+dags/.env
+dags/ServiceKey_GoogleCloudStorage.json
 airflow.cfg
 airflow.db
 airflow-webserver.pid
