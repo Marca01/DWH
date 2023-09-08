@@ -327,7 +327,7 @@ def transform_data(data):
 
     # Define Snowflake options
     sf_options = {
-        "sfURL": "uc98752.ap-southeast-1.snowflakecomputing.com",
+        "sfURL": "el88601.ap-southeast-1.snowflakecomputing.com",
         "sfUser": "KHale",
         "sfPassword": SNOWFLAKE_PWD,
         "sfDatabase": "EPL",
@@ -442,8 +442,8 @@ def transform_data(data):
 
         dim_manager = manager.join(dim_country_with_manager_id, on='manager_id').sort('manager_id')
 
-        dim_manager_stats = dim_manager_stats.union(dim_manager).orderBy('manager_id').dropDuplicates()
-        dim_country_stats = dim_country_stats.union(dim_country).orderBy('country_id').dropDuplicates().dropna()
+        dim_manager_stats = dim_manager_stats.union(dim_manager).dropDuplicates().orderBy('manager_id')
+        dim_country_stats = dim_country_stats.union(dim_country).dropDuplicates().dropna().orderBy('country_id')
 
     # dim_manager_stats.show(100, truncate=False)
     # dim_country_stats.show(100, truncate=False)
@@ -531,11 +531,11 @@ def transform_data(data):
 
         player = player.withColumn('dob', format_date_type_udf(col('dob')).cast(DateType()))
         dim_player = player.join(dim_country_with_player_id, on='player_id').join(dim_position_with_player_id,
-                                                                                  on='player_id').sort('player_id')
+                                                                                  on='player_id').dropDuplicates()
 
-        dim_player_stats = dim_player_stats.union(dim_player).orderBy('player_id').dropDuplicates()
-        dim_country_stats = dim_country_stats.union(dim_country).orderBy('country_id').dropDuplicates().dropna()
-        dim_position_stats = dim_position_stats.union(dim_position).orderBy('position_id').dropDuplicates().dropna()
+        dim_player_stats = dim_player_stats.union(dim_player).dropDuplicates().orderBy('player_id')
+        dim_country_stats = dim_country_stats.union(dim_country).dropDuplicates().dropna().orderBy('country_id')
+        dim_position_stats = dim_position_stats.union(dim_position).dropDuplicates().dropna().orderBy('position_id')
     #
     # dim_player_stats.show(100, truncate=False)
     # dim_country_stats.show(100, truncate=False)
@@ -1151,7 +1151,7 @@ def load_data(transformed_data):
     conn = snowflake.connector.connect(
         user='KHale',
         password=SNOWFLAKE_PWD,
-        account='uc98752.ap-southeast-1',
+        account='el88601.ap-southeast-1',
         database='EPL',
         schema='warehouse'
     )

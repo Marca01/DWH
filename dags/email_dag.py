@@ -78,7 +78,7 @@ default_args = {
 
 with DAG(
         dag_id="email_dag",
-        start_date=datetime(2023, 8, 14),
+        start_date=datetime(2023, 8, 28),
         schedule="30 21 * * 1",
         catchup=False,
         default_args=default_args,
