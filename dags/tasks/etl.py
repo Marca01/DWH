@@ -534,7 +534,7 @@ def transform_data(data):
                                                                                   on='player_id').dropDuplicates()
 
         dim_player_stats = dim_player_stats.union(dim_player).dropDuplicates().orderBy('player_id')
-        dim_country_stats = dim_country_stats.union(dim_country).dropDuplicates().dropna().orderBy('country_id')
+        dim_country_stats = dim_country_stats.union(dim_country).dropDuplicates().orderBy('country_id')
         dim_position_stats = dim_position_stats.union(dim_position).dropDuplicates().dropna().orderBy('position_id')
     #
     # dim_player_stats.show(100, truncate=False)
