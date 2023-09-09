@@ -443,7 +443,7 @@ def transform_data(data):
         dim_manager = manager.join(dim_country_with_manager_id, on='manager_id').sort('manager_id')
 
         dim_manager_stats = dim_manager_stats.union(dim_manager).dropDuplicates().orderBy('manager_id')
-        dim_country_stats = dim_country_stats.union(dim_country).dropDuplicates().dropna().orderBy('country_id')
+        dim_country_stats = dim_country_stats.union(dim_country).dropDuplicates().orderBy('country_id')
 
     # dim_manager_stats.show(100, truncate=False)
     # dim_country_stats.show(100, truncate=False)
